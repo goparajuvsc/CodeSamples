@@ -1,0 +1,59 @@
+public with sharing class ds_ViewAllController {
+public static List<related_list__c> docList { get; set; }
+public static List<String> urlList = new List<String>();
+public static List<String> docIds = new List<String>();
+private ApexPages.StandardSetController standardController;
+
+  public ds_ViewAllController(ApexPages.StandardSetController standardController) {
+    this.standardController = standardController;
+    try {
+      for (related_list__c doc : (List<related_list__c>) standardController.getSelected()) {
+        docIds.add(doc.Id);
+      }
+      if (docIds.size() > 0) {
+        docList = [SELECT id, Attachment_Id, Parent__c FROM related_list__c WHERE id IN :docIds WITH SYSTEM_MODE];
+      } else {
+        PageReference returnPage = standardController.cancel();
+        string PARENTOBJ = returnPage.getURL();
+        PARENTOBJ = PARENTOBJ.right(PARENTOBJ.length() - 1) + '%';
+        docList = [
+          SELECT id, Attachment_Id, Parent__c
+          FROM related_list__c
+          WHERE Parent__c LIKE :PARENTOBJ WITH SYSTEM_MODE
+        ];
+      }
+
+      string urls;
+      string frzUrl;
+      if (!docList.isEmpty()) {
+        for (related_list__c doc : docList) {
+          urls = URL.getOrgDomainURL().toExternalForm() + '/' + doc.Attachment_Id;
+          urlList.add(urls);
+        }
+      }
+    } catch (exception e) {
+      //handleException(e);
+      system.debug('ERROR from ds_ViewAllController::: '+e.getStackTraceString()+' :: '+e.getMessage());
+    }
+  }
+
+  public static String getStrings() {
+    return JSON.serialize(urlList);
+  }
+
+  public string getCurrentURL() {
+    PageReference returnPage = standardController.cancel();
+    string recURL = '"' + URL.getOrgDomainURL().toExternalForm() + returnPage.getURL() + '"';
+    return recURL;
+  }
+
+    
+ /*  private void handleException(Exception e) {
+    Service_Request_Logs_evt__e logEvent = new Service_Request_Logs_evt__e();
+    string linenum = e.getStackTraceString();
+    logEvent.Exception_Message__c = e.getMessage();
+    logEvent.Exceptoin_Details__c = linenum;
+    logEvent.Service_Request__c = freeZoneRecord.Id;
+    EventBus.publish(logEvent);
+  } */
+}
