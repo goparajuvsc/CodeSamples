@@ -46,14 +46,27 @@ private ApexPages.StandardSetController standardController;
     string recURL = '"' + URL.getOrgDomainURL().toExternalForm() + returnPage.getURL() + '"';
     return recURL;
   }
-
-    
- /*  private void handleException(Exception e) {
-    Service_Request_Logs_evt__e logEvent = new Service_Request_Logs_evt__e();
-    string linenum = e.getStackTraceString();
-    logEvent.Exception_Message__c = e.getMessage();
-    logEvent.Exceptoin_Details__c = linenum;
-    logEvent.Service_Request__c = freeZoneRecord.Id;
-    EventBus.publish(logEvent);
-  } */
 }
+
+<-------------------------CONTROLLER END----------------------------->
+
+<apex:page standardController="related_list__c" extensions="ds_ViewAllController" recordSetVar="docs">
+    <script type="text/javascript"> 
+        window.onload = function () {
+            addTabs();
+            reloadTab();
+        }
+
+        function addTabs() {
+            var urls = {!strings};
+            for(var i=0;i<urls.length;i++){   
+            window.open(urls[i], "_blank"); 
+            }                               
+        }
+
+        function reloadTab(){
+            window.open({!currentURL},"_self");
+          }
+          
+    </script>
+</apex:page>
